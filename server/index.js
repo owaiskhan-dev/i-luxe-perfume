@@ -19,7 +19,24 @@ import { byId, PRODUCTS, DELIVERY_FEE, PAYMENT_METHODS, ORDER_STATUSES, PAYMENT_
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
-app.use(cors({ origin: process.env.CORS_ORIGIN || SITE_URL, credentials: true }));
+// Allowed browser origins, as a comma-separated list. A single fixed origin
+// meant every other origin got back an Access-Control-Allow-Origin that did not
+// match, which the browser reports as "Failed to fetch" — that happens for
+// 127.0.0.1 vs localhost, for a Vite port other than 5173, and for the deployed
+// site. The matched origin is echoed back so the preflight always matches.
+const CORS_ORIGINS = (process.env.CORS_ORIGIN || SITE_URL)
+  .split(",")
+  .map((o) => o.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
+
+app.use(cors({
+  origin(origin, cb) {
+    // No Origin header: same-origin navigation, curl, or server-to-server.
+    if (!origin) return cb(null, true);
+    cb(null, CORS_ORIGINS.includes(origin));
+  },
+  credentials: true,
+}));
 app.use(express.json({ limit: "100kb" }));
 
 app.get("/api/health", (_req, res) => res.json({ ok: true, time: new Date().toISOString() }));

@@ -1,4 +1,7 @@
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+// Backend base URL. The Express API mounts every route under /api, so the base
+// must end with /api. A trailing slash on VITE_API_URL is stripped so it can
+// never produce a double slash (".../api//catalog").
+const API_URL = (import.meta.env.VITE_API_URL || "https://i-luxe-perfume-production.up.railway.app/api").replace(/\/+$/, "");
 
 // Legacy persisted admin token from the old build — must not survive reloads,
 // because the admin must re-authenticate on every dashboard visit.
